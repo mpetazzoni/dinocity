@@ -39,6 +39,8 @@ class Game:
     def __init__(self, filename, coverart='covers/_missing.png'):
         self.filename = filename
         self.coverart = coverart
+        if not os.path.exists(coverart):
+            self.coverart = 'covers/_missing.png'
         self.cover = self._adjust_cover_size(
                 clutter.Texture(filename=self.coverart),
                 self.GAME_BBOX_SIZE)
@@ -55,7 +57,7 @@ class Game:
             texture.set_size(w/wr, h/wr)
         else:
             texture.set_size(w/hr, h/hr)
-            texture.set_position(w/hr/2, 0)
+            texture.set_position((self.GAME_BBOX_SIZE[0] - w/hr)/2, 0)
 
         return texture
 
