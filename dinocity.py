@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 
+# DinoCity is a full-screen Super Nintendo ROM launcher designed to be
+# controlled with a SNES game pad only.
+
+__author__ = ('David Anderson <dave@natulte.net>',
+              'Maxime Petazzoni <maxime.petazzoni@bulix.org>')
+
 import clutter
 import os
 import struct
-
-BBOX_SIZE = (600, 436)  # Googled for chrono trigger cover art.
 
 # Let's pre-compute some Clutter colors
 COLOR_WHITE = clutter.color_from_string('white')
@@ -37,6 +41,15 @@ SNES_HEADER_SIZE = 64
 SNES_HEADER_OFFSET_LOROM = 0x7fc0
 SNES_HEADER_OFFSET_HIROM = 0xffc0
 
+# SNES header format:
+#   offset  size in bytes    contents
+#  ----------------------------------------------------------------------------
+#   0       21               Space-padded ASCII game title.
+#   21      1                ROM layout (LoROM / HiROM / FastROM).
+#   22      1                Cartridge type (ROM-only / with save-RAM).
+#   23      1                ROM byte size.
+#   24      1                RAM byte size.
+#   ... more, unparsed now.
 SNES_HEADER_FORMAT = '@21sBBBB'
 
 SNES_ROM_LAYOUT_LOROM = 0x20
@@ -46,10 +59,15 @@ SNES_ROM_LAYOUT_FASTROM = 0x10
 SNES_CARTRIDGE_TYPE_ROM_ONLY = 0x00
 SNES_CARTRIDGE_TYPE_SAVERAM = 0x02
 
+
 class InvalidRomFileException(Exception):
+    """The provided ROM file is invalid or not understood by DinoCity."""
     pass
+
 class InvalidHeaderFormatException(Exception):
+    """The SNES ROM header could not be parsed in this ROM."""
     pass
+
 
 class Game:
     """
@@ -57,11 +75,13 @@ class Game:
     and accompanying cover art.
     """
 
+    GAME_BBOX_SIZE = (600, 436)  # Googled for chrono trigger cover art.
+
     def __init__(self, filename, coverart='covers/_missing.png'):
         self.filename = filename
         self.cover = self._adjust_cover_size(
                 clutter.Texture(filename=coverart),
-                BBOX_SIZE)
+                self.GAME_BBOX_SIZE)
 
         self.rom_info = self._parse_rom()
         print self.rom_info
@@ -182,6 +202,14 @@ class DinoCity:
         stage.connect('destroy', clutter.main_quit)
         stage.set_color(COLOR_BLACK)
         stage.connect('key-press-event', self._on_key_event)
+
+        title = clutter.Text()
+        title.set_text('DinoCity')
+        title.set_position(100, 20)
+        title.set_color(COLOR_WHITE)
+        title.set_font_name('Helvecita Bold 36')
+        stage.add(title)
+
         return stage
 
     def _on_key_event(self, stage, event):
@@ -198,7 +226,7 @@ class DinoCity:
 
         box = clutter.Rectangle()
         box.set_position(-2,-2)
-        box.set_size(BBOX_SIZE[0]+4, BBOX_SIZE[1]+4)
+        box.set_size(self.GAME_BBOX_SIZE[0]+4, self.GAME_BBOX_SIZE[1]+4)
         box.set_color(COLOR_BLACK)
         box.set_border_color(COLOR_RED)
         box.set_border_width(2)
@@ -206,14 +234,14 @@ class DinoCity:
 
         name = clutter.Text()
         name.set_text(game.rom_info.get('name', 'Unknown'))
-        name.set_position(BBOX_SIZE[0]+42, 0)
+        name.set_position(self.GAME_BBOX_SIZE[0]+42, 0)
         name.set_color(COLOR_WHITE)
         name.set_font_name('Helvetica Bold 24')
         bbox.add(name)
 
         info = clutter.Text()
         info.set_text('%s (%s)' % (game.filename, game.get_info_string()))
-        info.set_position(BBOX_SIZE[0]+42, 50)
+        info.set_position(self.GAME_BBOX_SIZE[0]+42, 50)
         info.set_color(COLOR_WHITE)
         info.set_font_name('Bitstream Vera Sans Mono Roman 10')
         bbox.add(info)
