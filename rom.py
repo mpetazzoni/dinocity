@@ -99,7 +99,7 @@ class SNESRom:
             self.rom.seek(0)
             header = self.rom.read(SMC_HEADER_SIZE_NON_ZERO)
             data = struct.unpack(SMC_HEADER_FORMAT, header)
-            LOG.info('SMC Header data: %s.', data)
+            LOG.debug('SMC Header data: %s.', data)
 
             self.has_smc_header = True
             self.smc_rom_dumpsize = data[0]*8*1024
@@ -119,7 +119,7 @@ class SNESRom:
             self.rom.seek(offset + self.has_smc_header*SMC_HEADER_SIZE)
             header = self.rom.read(SNES_HEADER_SIZE_PARSED)
             data = struct.unpack(SNES_HEADER_FORMAT, header)
-            LOG.info('SNES header data: %s.' % repr(data))
+            LOG.debug('SNES header data: %s.' % repr(data))
             return data
         except struct.error:
             raise InvalidHeaderFormatException
@@ -135,17 +135,17 @@ class SNESRom:
             self._parse_smc_header()
 
         try:
-            LOG.info('Parsing SNES header at offset %s...' %
+            LOG.debug('Parsing SNES header at offset %s...' %
                      hex(SNES_HEADER_OFFSET_LOROM))
             header_data = self._read_header_at(SNES_HEADER_OFFSET_LOROM)
         except InvalidHeaderFormatException:
-            LOG.INFO('Header does not match expected format at LoROM offset. '
-                     'Trying at HiROM offset %d...' %
+            LOG.warning('Header does not match expected format at LoROM offset. '
+                        'Trying at HiROM offset %d...' %
                      hex(SNES_HEADER_OFFSET_HIROM))
             try:
                 header_data = self._read_header_at(SNES_HEADER_OFFSET_HIROM)
             except InvalidHeaderFormatException:
-                LOG.ERROR('Header still does not match expected format. '
+                LOG.error('Header still does not match expected format. '
                           'Giving up!')
                 raise InvalidRomFileException
 
