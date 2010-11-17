@@ -186,43 +186,8 @@ class Game:
 
         return info
 
-class DinoCity:
-
-    def __init__(self, screen_size, rom_directory, cover_directory):
-        self.stage = self._create_stage(screen_size)
-        self.rom_directory = rom_directory
-        self.cover_directory = cover_directory
-
-#        self._display_game('roms/zelda.smc', 'covers/zelda.jpg')
-        self._display_game('roms/simcity.smc', 'covers/simcity.jpg')
-
-    def _create_stage(self, screen_size):
-        stage = clutter.Stage()
-        stage.set_size(*screen_size)
-        stage.connect('destroy', clutter.main_quit)
-        stage.set_color(COLOR_BLACK)
-        stage.connect('key-press-event', self._on_key_event)
-
-        title = clutter.Text()
-        title.set_text('DinoCity')
-        title.set_position(100, 20)
-        title.set_color(COLOR_WHITE)
-        title.set_font_name('Helvecita Bold 36')
-        stage.add(title)
-
-        return stage
-
-    def _on_key_event(self, stage, event):
-        if event.keyval == clutter.keysyms.Escape:
-            clutter.main_quit()
-
-    def _display_game(self, filename, coverart=None):
-        assert self.stage
-
-        game = Game(filename, coverart)
+    def render(self):
         bbox = clutter.Group()
-        bbox.set_position(100, 100)
-        self.stage.add(bbox)
 
         box = clutter.Rectangle()
         box.set_position(-2,-2)
@@ -233,20 +198,54 @@ class DinoCity:
         bbox.add(box)
 
         name = clutter.Text()
-        name.set_text(game.rom_info.get('name', 'Unknown'))
+        name.set_text(self.rom_info.get('name', 'Unknown'))
         name.set_position(self.GAME_BBOX_SIZE[0]+42, 0)
         name.set_color(COLOR_WHITE)
         name.set_font_name('Helvetica Bold 24')
         bbox.add(name)
 
         info = clutter.Text()
-        info.set_text('%s (%s)' % (game.filename, game.get_info_string()))
+        info.set_text('%s (%s)' % (self.filename, self.get_info_string()))
         info.set_position(self.GAME_BBOX_SIZE[0]+42, 50)
         info.set_color(COLOR_WHITE)
         info.set_font_name('Bitstream Vera Sans Mono Roman 10')
         bbox.add(info)
 
-        bbox.add(game.cover)
+        bbox.add(self.cover)
+        return bbox
+
+class DinoCity:
+
+    def __init__(self, screen_size, rom_directory, cover_directory):
+        self.stage = self._create_stage(screen_size)
+        self.rom_directory = rom_directory
+        self.cover_directory = cover_directory
+
+    def _create_stage(self, screen_size):
+        stage = clutter.Stage()
+        stage.set_size(*screen_size)
+        stage.connect('destroy', clutter.main_quit)
+        stage.set_color(COLOR_BLACK)
+        stage.connect('key-press-event', self._on_key_event)
+
+        title = clutter.Text()
+        title.set_text('DinoCity')
+        title.set_position(50, 20)
+        title.set_color(COLOR_WHITE)
+        title.set_font_name('Helvecita Bold 36')
+        stage.add(title)
+
+        # Testing
+        game = Game('roms/simcity.smc', 'covers/simcity.jpg')
+        bbox = game.render()
+        bbox.set_position(50, 120)
+        stage.add(bbox)
+
+        return stage
+
+    def _on_key_event(self, stage, event):
+        if event.keyval == clutter.keysyms.Escape:
+            clutter.main_quit()
 
     def go(self):
         self.stage.show_all()
