@@ -11,6 +11,7 @@ import logging
 import os
 import struct
 import sys
+import time
 
 import rom
 
@@ -175,6 +176,13 @@ class DinoCity:
 
     def display_current_game(self):
         if self.current_bbox:
+            a = self.current_bbox.animate(clutter.EASE_OUT_SINE, 150, 'opacity', 0)
+            a.connect('completed', self._display_current_game_bh)
+        else:
+            self._display_current_game_bh()
+
+    def _display_current_game_bh(self, a=None):
+        if self.current_bbox:
             self.stage.remove(self.current_bbox)
 
         game = Game(os.path.join(self.rom_directory,
@@ -184,6 +192,7 @@ class DinoCity:
         LOG.debug('Loaded %s' % game)
 
         self.current_bbox = game.render()
+        self.current_bbox.opacity = 0
         self._front_and_center(self.current_bbox, yoff=42)
         self.stage.add(self.current_bbox)
 
