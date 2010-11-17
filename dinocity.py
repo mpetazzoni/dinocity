@@ -10,6 +10,7 @@ import clutter
 import logging
 import os
 import struct
+import subprocess
 import sys
 import time
 
@@ -151,6 +152,14 @@ class DinoCity:
             self.next_game()
         elif event.keyval == clutter.keysyms.Left:
             self.prev_game()
+        elif event.keyval == clutter.keysyms.Return:
+            self.run_game()
+
+    def run_game(self):
+        if not len(self.roms) or self.current_game is None:
+            return
+        subprocess.call(['snes9x-gtk', os.path.join(self.rom_directory,
+                                                self.roms[self.current_game])])
 
     def next_game(self):
         if not len(self.roms):
