@@ -125,8 +125,6 @@ class DinoCity:
         self.roms = sorted(map(lambda x: x[:-4],
                            filter(lambda x: x.endswith('.smc'),
                                   os.listdir(self.rom_directory))))
-        LOG.debug('Found %d ROMs in directory %s.' % (len(self.roms),
-                                                     self.rom_directory))
 
         # Create the Clutter stage with some static interface elements
         self.stage = self._create_stage(screen_size)
@@ -139,7 +137,7 @@ class DinoCity:
             self.current_game_id = 0
             self.display_current_game()
 
-        LOG.info('DinoCity ready.')
+        LOG.info('DinoCity ready, %d ROM(s).' % len(self.roms))
 
     def _create_stage(self, screen_size):
         stage = clutter.Stage()
